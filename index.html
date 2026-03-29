@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Daily Activity Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f5f4f0;
+    --surface: #ffffff;
+    --surface-2: #f9f8f5;
+    --border: #e8e6e0;
+    --border-focus: #b5a99a;
+    --text-primary: #1a1916;
+    --text-secondary: #6b6760;
+    --text-muted: #a09c97;
+    --accent: #2d6a4f;
+    --accent-light: #e8f4ee;
+    --accent-hover: #245a41;
+    --danger: #c0392b;
+    --warning: #e67e22;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.07), 0 1px 3px rgba(0,0,0,0.04);
+    --shadow-lg: 0 12px 40px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.05);
+    --radius-sm: 8px;
+    --radius: 12px;
+    --radius-lg: 18px;
+    --radius-xl: 24px;
+    --font: 'DM Sans', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+    --transition: 0.18s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text-primary);
+    min-height: 100vh;
+    padding: 20px 16px 60px;
+    line-height: 1.6;
+  }
+
+  /* ── Header ─────────────────────────────────── */
+  .header {
+    max-width: 680px;
+    margin: 0 auto 28px;
+  }
+  .header-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .header-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .brand-icon {
+    width: 40px; height: 40px;
+    background: var(--accent);
+    border-radius: var(--radius-sm);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .brand-icon svg { width: 20px; height: 20px; fill: white; }
+  .brand-name {
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+    color: var(--text-primary);
+  }
+  .brand-tagline {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+
+  /* ── Stats Bar ───────────────────────────────── */
+  .stats-bar {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 18px;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow var(--transition);
+  }
+  .stat-card:hover { box-shadow: var(--shadow-md); }
+  .stat-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 4px;
+  }
+  .stat-value {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: -0.5px;
+    font-family: var(--font-mono);
+  }
+  .stat-value.accent { color: var(--accent); }
+  .stat-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  /* ── Main Card ───────────────────────────────── */
+  .card {
+    max-width: 680px;
+    margin: 0 auto;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+  }
+
+  .card-header {
+    padding: 24px 28px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface-2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .card-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: -0.2px;
+  }
+  .card-subtitle {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+  .session-badge {
+    background: var(--accent-light);
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 500;
+    font-family: var(--font-mono);
+    padding: 4px 10px;
+    border-radius: 100px;
+    border: 1px solid #c0ddd0;
+  }
+
+  /* ── Form ────────────────────────────────────── */
+  .form-body { padding: 24px 28px; }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .form-grid .span-2 { grid-column: 1 / -1; }
+
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    letter-spacing: 0.2px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .required { color: var(--danger); font-size: 10px; }
+
+  input, select, textarea {
+    font-family: var(--font);
+    font-size: 14px;
+    color: var(--text-primary);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    width: 100%;
+    outline: none;
+    transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
+    -webkit-appearance: none;
+  }
+  input:hover, select:hover, textarea:hover {
+    border-color: var(--border-focus);
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--accent);
+    background: white;
+    box-shadow: 0 0 0 3px rgba(45,106,79,0.10);
+  }
+  input::placeholder, textarea::placeholder { color: var(--text-muted); }
+  textarea { resize: vertical; min-height: 90px; line-height: 1.6; }
+
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%236b6760' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+    cursor: pointer;
+  }
+
+  /* ── Productivity Slider ─────────────────────── */
+  .slider-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .slider-wrap { flex: 1; position: relative; }
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    background: var(--border);
+    border-radius: 100px;
+    padding: 0;
+    cursor: pointer;
+    border: none;
+    box-shadow: none;
+  }
+  input[type="range"]:focus { box-shadow: none; border: none; }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 3px solid white;
+    box-shadow: 0 0 0 1.5px var(--accent), 0 2px 6px rgba(0,0,0,0.15);
+    cursor: pointer;
+    transition: transform var(--transition);
+  }
+  input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+  input[type="range"]::-moz-range-thumb {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 3px solid white;
+    box-shadow: 0 0 0 1.5px var(--accent);
+    cursor: pointer;
+  }
+  .slider-value-box {
+    width: 44px; height: 36px;
+    background: var(--accent);
+    color: white;
+    border-radius: var(--radius-sm);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+    font-weight: 600;
+    font-family: var(--font-mono);
+    flex-shrink: 0;
+    transition: background var(--transition);
+  }
+  .slider-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+    font-size: 10px;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+  }
+
+  /* ── Divider ─────────────────────────────────── */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 20px 0;
+  }
+
+  /* ── Buttons ─────────────────────────────────── */
+  .btn-row {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    font-family: var(--font);
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 11px 22px;
+    cursor: pointer;
+    transition: all var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+  }
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover {
+    background: var(--surface-2);
+    border-color: var(--border-focus);
+    color: var(--text-primary);
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: white;
+    box-shadow: 0 1px 4px rgba(45,106,79,0.25);
+  }
+  .btn-primary:hover {
+    background: var(--accent-hover);
+    box-shadow: 0 3px 12px rgba(45,106,79,0.30);
+    transform: translateY(-1px);
+  }
+  .btn-primary:active { transform: translateY(0); }
+  .btn-primary:disabled {
+    background: var(--text-muted);
+    box-shadow: none;
+    transform: none;
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
+  .btn-icon { width: 16px; height: 16px; }
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid rgba(255,255,255,0.35);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Log Table ───────────────────────────────── */
+  .log-section {
+    max-width: 680px;
+    margin: 24px auto 0;
+  }
+  .log-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    padding: 0 2px;
+  }
+  .log-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+  }
+  .log-count {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+  }
+
+  .log-list { display: flex; flex-direction: column; gap: 8px; }
+
+  .log-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 12px;
+    align-items: center;
+    box-shadow: var(--shadow-sm);
+    animation: slideIn 0.25s ease forwards;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .log-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+  .log-info { min-width: 0; }
+  .log-subject {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .log-meta {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 2px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .log-right { text-align: right; flex-shrink: 0; }
+  .log-duration {
+    font-size: 14px;
+    font-weight: 600;
+    font-family: var(--font-mono);
+    color: var(--accent);
+  }
+  .log-productivity {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+  .prod-dots { display: inline-flex; gap: 2px; }
+  .prod-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--border);
+  }
+  .prod-dot.filled { background: var(--accent); }
+
+  .log-empty {
+    text-align: center;
+    padding: 32px;
+    color: var(--text-muted);
+    font-size: 13px;
+    background: var(--surface);
+    border: 1px dashed var(--border);
+    border-radius: var(--radius);
+  }
+  .log-empty svg { width: 28px; height: 28px; opacity: 0.3; margin-bottom: 8px; }
+
+  /* ── Toast ───────────────────────────────────── */
+  .toast-container {
+    position: fixed;
+    top: 20px; right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    pointer-events: none;
+  }
+  .toast {
+    background: var(--text-primary);
+    color: white;
+    border-radius: var(--radius-sm);
+    padding: 12px 18px;
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 240px;
+    max-width: 340px;
+    pointer-events: auto;
+    animation: toastIn 0.3s ease forwards;
+  }
+  .toast.success { background: var(--accent); }
+  .toast.error { background: var(--danger); }
+  .toast svg { width: 16px; height: 16px; flex-shrink: 0; }
+  @keyframes toastIn {
+    from { opacity: 0; transform: translateX(20px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes toastOut {
+    from { opacity: 1; transform: translateX(0); }
+    to   { opacity: 0; transform: translateX(20px); }
+  }
+
+  /* ── Validation ──────────────────────────────── */
+  .field-error {
+    font-size: 11px;
+    color: var(--danger);
+    margin-top: -2px;
+    display: none;
+  }
+  input.invalid, select.invalid, textarea.invalid {
+    border-color: var(--danger);
+    background: #fef8f8;
+  }
+
+  /* ── Responsive ──────────────────────────────── */
+  @media (max-width: 520px) {
+    body { padding: 14px 12px 50px; }
+    .form-grid { grid-template-columns: 1fr; }
+    .form-grid .span-2 { grid-column: 1; }
+    .card-header, .form-body { padding: 18px 18px; }
+    .btn-row { justify-content: stretch; }
+    .btn { flex: 1; justify-content: center; }
+    .stats-bar { grid-template-columns: 1fr 1fr; }
+    .stats-bar .stat-card:last-child { grid-column: 1 / -1; }
+    .stat-value { font-size: 18px; }
+    .log-item { grid-template-columns: auto 1fr auto; gap: 8px; padding: 12px 14px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-top">
+    <div class="header-brand">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zm1 14.93V17a1 1 0 0 1-2 0v-.07A8 8 0 0 1 4.07 11H5a1 1 0 0 1 0 2h-.93A8.001 8.001 0 0 1 11 4.07V5a1 1 0 0 1 2 0v-.93A8.001 8.001 0 0 1 19.93 11H19a1 1 0 0 1 0-2h.93A8.001 8.001 0 0 1 13 16.93zM12 8a1 1 0 0 1 1 1v3.586l2.707 2.707a1 1 0 0 1-1.414 1.414l-3-3A1 1 0 0 1 11 13V9a1 1 0 0 1 1-1z"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-name">Activity Tracker</div>
+        <div class="brand-tagline">Student Productivity — <span id="today-date"></span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-bar">
+    <div class="stat-card">
+      <div class="stat-label">Study Time</div>
+      <div class="stat-value accent" id="stat-time">0</div>
+      <div class="stat-sub">minutes today</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Sessions</div>
+      <div class="stat-value" id="stat-sessions">0</div>
+      <div class="stat-sub">logged today</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Avg. Productivity</div>
+      <div class="stat-value" id="stat-prod">—</div>
+      <div class="stat-sub">out of 10</div>
+    </div>
+  </div>
+</div>
+
+<!-- Main Form Card -->
+<div class="card">
+  <div class="card-header">
+    <div>
+      <div class="card-title">Log Activity</div>
+      <div class="card-subtitle">Record a single study or practice session</div>
+    </div>
+    <span class="session-badge" id="session-badge">#1</span>
+  </div>
+
+  <div class="form-body">
+    <form id="activityForm" novalidate>
+
+      <div class="form-grid">
+
+        <!-- Date -->
+        <div class="field">
+          <label class="field-label" for="date">Date <span class="required">*</span></label>
+          <input type="date" id="date" name="date" required />
+          <div class="field-error" id="date-err">Please select a date.</div>
+        </div>
+
+        <!-- Subject -->
+        <div class="field">
+          <label class="field-label" for="subject">Subject <span class="required">*</span></label>
+          <select id="subject" name="subject" required>
+            <option value="">— Choose subject —</option>
+            <option value="Core Java">Core Java</option>
+            <option value="Advanced Java">Advanced Java</option>
+            <option value="DSA (C)">DSA (C)</option>
+            <option value="Web Development">Web Development</option>
+            <option value="English Communication">English Communication</option>
+            <option value="AI Course">AI Course</option>
+            <option value="NPTEL">NPTEL</option>
+            <option value="Other">Other</option>
+          </select>
+          <div class="field-error" id="subject-err">Please select a subject.</div>
+        </div>
+
+        <!-- Activity Type -->
+        <div class="field">
+          <label class="field-label" for="activityType">Activity Type <span class="required">*</span></label>
+          <select id="activityType" name="activityType" required>
+            <option value="">— Choose type —</option>
+            <option value="Study">Study</option>
+            <option value="Coding">Coding</option>
+            <option value="Revision">Revision</option>
+            <option value="Practice">Practice</option>
+          </select>
+          <div class="field-error" id="activityType-err">Please select an activity type.</div>
+        </div>
+
+        <!-- Duration -->
+        <div class="field">
+          <label class="field-label" for="duration">Duration (minutes) <span class="required">*</span></label>
+          <input type="number" id="duration" name="duration" min="1" max="600" placeholder="e.g. 45" required />
+          <div class="field-error" id="duration-err">Enter a valid duration (1–600 min).</div>
+        </div>
+
+        <!-- Topic -->
+        <div class="field span-2">
+          <label class="field-label" for="topic">Topic Covered <span class="required">*</span></label>
+          <input type="text" id="topic" name="topic" placeholder="e.g. Recursion, HashMap, HTML Flexbox…" required />
+          <div class="field-error" id="topic-err">Please enter the topic covered.</div>
+        </div>
+
+        <!-- Productivity Slider -->
+        <div class="field span-2">
+          <label class="field-label" for="productivity">Productivity</label>
+          <div class="slider-row">
+            <div class="slider-wrap">
+              <input type="range" id="productivity" name="productivity" min="1" max="10" value="7" />
+              <div class="slider-labels">
+                <span>1 · Low</span>
+                <span>5 · Medium</span>
+                <span>10 · Peak</span>
+              </div>
+            </div>
+            <div class="slider-value-box" id="prod-display">7</div>
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="field span-2">
+          <label class="field-label" for="notes">Notes</label>
+          <textarea id="notes" name="notes" placeholder="What went well? Any blockers? Plans for next session…"></textarea>
+        </div>
+
+      </div><!-- /form-grid -->
+
+      <div class="divider"></div>
+
+      <div class="btn-row">
+        <button type="button" class="btn btn-ghost" id="resetBtn">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          Reset
+        </button>
+        <button type="submit" class="btn btn-primary" id="submitBtn">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Activity
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<!-- Activity Log -->
+<div class="log-section">
+  <div class="log-header">
+    <span class="log-title">Today's Log</span>
+    <span class="log-count" id="log-count">0 entries</span>
+  </div>
+  <div class="log-list" id="logList">
+    <div class="log-empty" id="logEmpty">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" display="block" style="margin:0 auto 8px"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      No activities logged yet. Add your first session above.
+    </div>
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+const WEBHOOK_URL = "https://sahil008.app.n8n.cloud/webhook/004e380f-7ff8-4a47-aa5e-1a18156bb997";
+
+// ── State ────────────────────────────────────────
+let activities = JSON.parse(localStorage.getItem("dat_activities") || "[]");
+let sessionCount = activities.length + 1;
+
+// ── Init ─────────────────────────────────────────
+const todayStr = new Date().toISOString().split("T")[0];
+document.getElementById("date").value = todayStr;
+document.getElementById("today-date").textContent = new Date().toLocaleDateString("en-IN", {
+  weekday: "long", day: "numeric", month: "short"
+});
+
+renderLog();
+updateStats();
+updateSessionBadge();
+
+// ── Productivity slider sync ──────────────────────
+const slider = document.getElementById("productivity");
+const prodDisplay = document.getElementById("prod-display");
+
+slider.addEventListener("input", () => {
+  prodDisplay.textContent = slider.value;
+  const pct = (slider.value - 1) / 9;
+  const hue = Math.round(pct * 120); // red→green
+  prodDisplay.style.background = `hsl(${hue}, 55%, 38%)`;
+  slider.style.background = `linear-gradient(to right, hsl(${hue},55%,38%) ${pct*100}%, #e8e6e0 ${pct*100}%)`;
+});
+slider.dispatchEvent(new Event("input")); // init
+
+// ── Reset ─────────────────────────────────────────
+document.getElementById("resetBtn").addEventListener("click", resetForm);
+
+function resetForm() {
+  document.getElementById("activityForm").reset();
+  document.getElementById("date").value = todayStr;
+  slider.value = 7;
+  slider.dispatchEvent(new Event("input"));
+  clearErrors();
+}
+
+// ── Validation ────────────────────────────────────
+function clearErrors() {
+  document.querySelectorAll(".field-error").forEach(el => el.style.display = "none");
+  document.querySelectorAll(".invalid").forEach(el => el.classList.remove("invalid"));
+}
+
+function showError(id, msgId) {
+  const el = document.getElementById(id);
+  el.classList.add("invalid");
+  document.getElementById(msgId).style.display = "block";
+  return false;
+}
+
+function validate(data) {
+  clearErrors();
+  let valid = true;
+  if (!data.date)         { showError("date", "date-err"); valid = false; }
+  if (!data.subject)      { showError("subject", "subject-err"); valid = false; }
+  if (!data.activityType) { showError("activityType", "activityType-err"); valid = false; }
+  if (!data.duration || data.duration < 1 || data.duration > 600)
+                          { showError("duration", "duration-err"); valid = false; }
+  if (!data.topic.trim()) { showError("topic", "topic-err"); valid = false; }
+  return valid;
+}
+
+// ── Submit ────────────────────────────────────────
+document.getElementById("activityForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const data = {
+    date:         document.getElementById("date").value,
+    subject:      document.getElementById("subject").value,
+    activityType: document.getElementById("activityType").value,
+    duration:     parseInt(document.getElementById("duration").value),
+    topic:        document.getElementById("topic").value.trim(),
+    productivity: parseInt(slider.value),
+    notes:        document.getElementById("notes").value.trim(),
+    loggedAt:     new Date().toISOString(),
+    session:      sessionCount,
+  };
+
+  if (!validate(data)) {
+    toast("Please fill in all required fields.", "error");
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+    await fetch(WEBHOOK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+
+    // Save locally
+    activities.push(data);
+    localStorage.setItem("dat_activities", JSON.stringify(activities));
+    sessionCount++;
+
+    updateStats();
+    renderLog();
+    updateSessionBadge();
+    resetForm();
+    toast(`✓ "${data.subject}" logged — ${data.duration} min`, "success");
+  } catch (err) {
+    // Still save locally even if webhook fails
+    activities.push(data);
+    localStorage.setItem("dat_activities", JSON.stringify(activities));
+    sessionCount++;
+    updateStats();
+    renderLog();
+    updateSessionBadge();
+    resetForm();
+    toast("Saved locally (webhook unreachable)", "success");
+  } finally {
+    setLoading(false);
+  }
+});
+
+function setLoading(on) {
+  const btn = document.getElementById("submitBtn");
+  if (on) {
+    btn.disabled = true;
+    btn.innerHTML = `<div class="spinner"></div> Logging…`;
+  } else {
+    btn.disabled = false;
+    btn.innerHTML = `<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add Activity`;
+  }
+}
+
+// ── Stats ─────────────────────────────────────────
+function updateStats() {
+  const todayLogs = activities.filter(a => a.date === todayStr);
+  const total = todayLogs.reduce((s, a) => s + (a.duration || 0), 0);
+  const avgProd = todayLogs.length
+    ? (todayLogs.reduce((s, a) => s + a.productivity, 0) / todayLogs.length).toFixed(1)
+    : "—";
+  document.getElementById("stat-time").textContent = total;
+  document.getElementById("stat-sessions").textContent = todayLogs.length;
+  document.getElementById("stat-prod").textContent = avgProd;
+}
+
+function updateSessionBadge() {
+  document.getElementById("session-badge").textContent = `#${sessionCount}`;
+}
+
+// ── Log Render ────────────────────────────────────
+function renderLog() {
+  const list = document.getElementById("logList");
+  const empty = document.getElementById("logEmpty");
+  const count = document.getElementById("log-count");
+
+  const todayLogs = activities.filter(a => a.date === todayStr).slice().reverse();
+  count.textContent = `${todayLogs.length} ${todayLogs.length === 1 ? "entry" : "entries"}`;
+
+  if (todayLogs.length === 0) {
+    empty.style.display = "block";
+    // Remove existing items
+    list.querySelectorAll(".log-item").forEach(el => el.remove());
+    return;
+  }
+
+  empty.style.display = "none";
+  list.querySelectorAll(".log-item").forEach(el => el.remove());
+
+  todayLogs.forEach((a, i) => {
+    const item = document.createElement("div");
+    item.className = "log-item";
+    item.style.animationDelay = `${i * 0.04}s`;
+
+    const pct = Math.round(((a.productivity - 1) / 9) * 10);
+    const hue = Math.round(((a.productivity - 1) / 9) * 120);
+    const dotColor = `hsl(${hue}, 55%, 38%)`;
+
+    const dotsHtml = Array.from({length: 10}, (_, j) =>
+      `<span class="prod-dot ${j < a.productivity ? 'filled' : ''}" style="${j < a.productivity ? `background:${dotColor}` : ''}"></span>`
+    ).join("");
+
+    item.innerHTML = `
+      <div class="log-dot" style="background:${dotColor}"></div>
+      <div class="log-info">
+        <div class="log-subject">${esc(a.subject)} · ${esc(a.activityType)}</div>
+        <div class="log-meta">
+          <span>${esc(a.topic)}</span>
+          ${a.notes ? `<span title="${esc(a.notes)}">📝 Note</span>` : ""}
+        </div>
+      </div>
+      <div class="log-right">
+        <div class="log-duration">${a.duration}m</div>
+        <div class="log-productivity"><span class="prod-dots">${dotsHtml}</span></div>
+      </div>
+    `;
+    list.appendChild(item);
+  });
+}
+
+// ── Toast ─────────────────────────────────────────
+function toast(msg, type = "success") {
+  const el = document.createElement("div");
+  el.className = `toast ${type}`;
+  const icon = type === "success"
+    ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`
+    : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
+  el.innerHTML = `${icon}<span>${msg}</span>`;
+  document.getElementById("toastContainer").appendChild(el);
+  setTimeout(() => {
+    el.style.animation = "toastOut 0.3s ease forwards";
+    setTimeout(() => el.remove(), 320);
+  }, 3500);
+}
+
+function esc(str) {
+  return String(str ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+</script>
+</body>
+</html>
